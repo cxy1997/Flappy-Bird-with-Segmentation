@@ -21,9 +21,9 @@ PIPE_HEIGHT = 320
 PLAYER_INDEX_GEN = cycle([0, 1, 2, 1])
 
 
-class FlappyBirdEnv(object):
+class FlappyBirdSegEnv(object):
     def __init__(self):
-        super(FlappyBirdEnv, self).__init__()
+        super(FlappyBirdSegEnv, self).__init__()
 
         # RL environment attributes
         self.action_space = Discrete(2)
@@ -32,14 +32,14 @@ class FlappyBirdEnv(object):
 
         # Game assets
         self.player = (
-            cv2.imread(os.path.join('assets', 'sprites', 'redbird-upflap.png'), -1),
-            cv2.imread(os.path.join('assets', 'sprites', 'redbird-midflap.png'), -1),
-            cv2.imread(os.path.join('assets', 'sprites', 'redbird-downflap.png'), -1)
+            cv2.imread(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets', 'sprites', 'redbird-upflap.png'), -1),
+            cv2.imread(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets', 'sprites', 'redbird-midflap.png'), -1),
+            cv2.imread(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets', 'sprites', 'redbird-downflap.png'), -1)
         )
-        self.background = cv2.imread(os.path.join('assets', 'sprites', 'background-black.png'))
-        self.lowerpipe = cv2.imread(os.path.join('assets', 'sprites', 'pipe-green.png'), -1)
+        self.background = cv2.imread(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets', 'sprites', 'background-black.png'))
+        self.lowerpipe = cv2.imread(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets', 'sprites', 'pipe-green.png'), -1)
         self.upperpipe = np.rot90(self.lowerpipe, k=2)
-        self.base = cv2.imread(os.path.join('assets', 'sprites', 'base.png'), -1)
+        self.base = cv2.imread(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets', 'sprites', 'base.png'), -1)
 
         # Dynamics config
         self.pipeVelX = -4       # player's velocity along Y
@@ -185,7 +185,7 @@ def get_random_pipe(pipeX=None):
 
 
 if __name__ == '__main__':
-    env = FlappyBirdEnv()
+    env = FlappyBirdSegEnv()
     obs, info = env.reset()
     print(info)
     for i in range(40):
