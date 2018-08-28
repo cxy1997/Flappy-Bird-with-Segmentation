@@ -49,8 +49,6 @@ class FlappyBirdSegEnv(object):
         self.playerFlapAcc = -9  # players speed on flapping
         self.baseShift = self.base.shape[1] - SCREENWIDTH
 
-        self.reset()
-
     def reset(self):
         self.timestep = 0
         self.playerIndex = 0
@@ -66,7 +64,7 @@ class FlappyBirdSegEnv(object):
         self.upper_pipes = list(map(lambda x: x['upper_pipe'], new_pipes))
         self.lower_pipes = list(map(lambda x: x['lower_pipe'], new_pipes))
 
-        self.playerVelY = 0         # player's velocity along Y, default same as playerFlapped
+        self.playerVelY = 0  # player's velocity along Y, default same as playerFlapped
 
         obs, self.segmentation, self.collision = self.render()
         self.collision = self.collision or self.playery >= BASEY - PLAYER_HEIGHT
@@ -87,7 +85,6 @@ class FlappyBirdSegEnv(object):
         for pipe in self.upper_pipes:
             pipeMidPos = pipe['x'] + PIPE_WIDTH / 2
             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
-                self.score += 1
                 reward = 1
                 break
 
@@ -100,9 +97,7 @@ class FlappyBirdSegEnv(object):
         # player's movement
         if self.playerVelY < self.playerMaxVelY and action == 0:
             self.playerVelY += self.playerAccY
-        self.playery += min(self.playerVelY, BASEY - self.playery - PLAYER_HEIGHT)
-        if self.playery < 0:
-            self.playery = 0
+        self.playery = np.clip(self.playery + self.playerVelY, 0, BASEY - PLAYER_HEIGHT)
 
         # move pipes to left
         for uPipe, lPipe in zip(self.upper_pipes, self.lower_pipes):
@@ -139,16 +134,16 @@ class FlappyBirdSegEnv(object):
         return obs, seg, collision
 
     def get_info(self):
-        info = dict()
-        info['playerx'] = self.playerx
-        info['playery'] = self.playery
-        info['upper_pipes'] = self.upper_pipes
-        info['lower_pipes'] = self.lower_pipes
-        info['playerVelX'] = -self.pipeVelX
-        info['playerVelY'] = self.playerVelY
-        info['segmentation'] = self.segmentation
-        info['collision'] = self.collision
-        return info
+        return {
+            'playerx': self.playerx,
+            'playery': self.playery,
+            'upper_pipes': self.upper_pipes,
+            'lower_pipes': self.lower_pipes,
+            'playerVelX': -self.pipeVelX,
+            'playerVelY': self.playerVelY,
+            'segmentation': self.segmentation,
+            'collision': self.collision
+        }
 
 
 def draw_upon(obs, seg, obj, x, y, classID):
@@ -182,14 +177,3 @@ def get_random_pipe(pipeX=None):
         'upper_pipe': {'x': pipeX, 'y': gapY - PIPE_HEIGHT},
         'lower_pipe': {'x': pipeX, 'y': gapY + PIPEGAPSIZE}
     }
-
-
-if __name__ == '__main__':
-    env = FlappyBirdSegEnv()
-    obs, info = env.reset()
-    print(info)
-    for i in range(40):
-        obs, reward, terminal, info = env.step(int(input()))
-        print(terminal)
-        if terminal:
-            obs, info = env.reset()
