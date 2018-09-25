@@ -7,7 +7,7 @@
 ```bash
 git clone https://github.com/cxy1997/Flappy-Bird-with-Segmentation.git
 cd Flappy-Bird-with-Segmentation/
-python setup.py install
+python -m pip install -e . || python setup.py install
 ```
 
 ### Usage
