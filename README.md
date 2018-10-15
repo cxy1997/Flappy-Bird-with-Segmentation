@@ -12,7 +12,7 @@ python -m pip install -e . || python setup.py install
 
 ### Usage
 ```python
-from Flappy_Bird_with_Segmentation.environment import FlappyBirdSegEnv
+from Flappy_Bird_with_Segmentation import FlappyBirdSegEnv
 
 env = FlappyBirdSegEnv()
 obs, info = env.reset()
