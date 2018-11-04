@@ -66,7 +66,7 @@ class FlappyBirdSegEnv(object):
 
         self.playerVelY = 0  # player's velocity along Y, default same as playerFlapped
 
-        obs, self.segmentation, self.collision = self.render()
+        obs, self.segmentation, self.collision, self.bbox = self.render()
         self.collision = self.collision or self.playery >= BASEY - PLAYER_HEIGHT
         return obs, self.get_info()
 
@@ -115,7 +115,7 @@ class FlappyBirdSegEnv(object):
             self.upper_pipes.pop(0)
             self.lower_pipes.pop(0)
 
-        obs, self.segmentation, self.collision = self.render()
+        obs, self.segmentation, self.collision, self.bbox = self.render()
         self.collision = self.collision or self.playery >= BASEY - PLAYER_HEIGHT
         if self.collision:
             terminal = True
@@ -125,13 +125,17 @@ class FlappyBirdSegEnv(object):
     def render(self):
         obs = np.array(self.background, dtype=np.uint8)
         seg = np.zeros(self.background.shape[:-1], dtype=np.uint8)
-        obs, seg, _ = draw_upon(obs, seg, self.base, self.basex, BASEY, 1)
+        obs, seg, _, _ = draw_upon(obs, seg, self.base, self.basex, BASEY, 1)
+        bboxes = []
         for upperpipe, lowerpipe in zip(self.upper_pipes, self.lower_pipes):
             if -PIPE_WIDTH < upperpipe['x'] < SCREENWIDTH:
-                obs, seg, _ = draw_upon(obs, seg, self.upperpipe, upperpipe['x'], upperpipe['y'], 2)
-                obs, seg, _ = draw_upon(obs, seg, self.lowerpipe, lowerpipe['x'], lowerpipe['y'], 2)
-        obs, seg, collision = draw_upon(obs, seg, self.player[self.playerIndex], self.playerx, self.playery, 3)
-        return obs, seg, collision
+                obs, seg, _, bbox = draw_upon(obs, seg, self.upperpipe, upperpipe['x'], upperpipe['y'], 2)
+                bboxes.append({'label': 'upper_pipe', 'bbox': bbox})
+                obs, seg, _, bbox = draw_upon(obs, seg, self.lowerpipe, lowerpipe['x'], lowerpipe['y'], 2)
+                bboxes.append({'label': 'lower_pipe', 'bbox': bbox})
+        obs, seg, collision, bbox = draw_upon(obs, seg, self.player[self.playerIndex], self.playerx, self.playery, 3)
+        bboxes.append({'label': 'bird', 'bbox': bbox})
+        return obs, seg, collision, bboxes
 
     def get_info(self):
         return {
@@ -142,7 +146,8 @@ class FlappyBirdSegEnv(object):
             'playerVelX': -self.pipeVelX,
             'playerVelY': self.playerVelY,
             'segmentation': self.segmentation,
-            'collision': self.collision
+            'collision': self.collision,
+            'bbox': self.bbox
         }
 
 
@@ -163,7 +168,8 @@ def draw_upon(obs, seg, obj, x, y, classID):
     rgb_mask = np.expand_dims(seg_mask, axis=2)
     obs[x+obj_x_start: x+obj_x_end, y+obj_y_start: y+obj_y_end, :3] = patch * rgb_mask + obs[x+obj_x_start: x+obj_x_end, y+obj_y_start: y+obj_y_end, :3] * (1-rgb_mask)
     seg[x+obj_x_start: x+obj_x_end, y+obj_y_start: y+obj_y_end] = classID * seg_mask + seg[x+obj_x_start: x+obj_x_end, y+obj_y_start: y+obj_y_end] * (1-seg_mask)
-    return obs, seg, collision
+    bbox = [x+obj_x_start, y+obj_y_start, x+obj_x_end, y+obj_y_end]
+    return obs, seg, collision, bbox
 
 
 def get_random_pipe(pipeX=None):
