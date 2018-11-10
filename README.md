@@ -1,13 +1,11 @@
-## Flappy Bird RL environment with Segmentation
+## Flappy Bird RL environment with Segmentation and Detection
 <figure class="half">
     <img src="./images/demo.gif" width="70%">
 </figure>
 
 ### Installation
 ```bash
-git clone https://github.com/cxy1997/Flappy-Bird-with-Segmentation.git
-cd Flappy-Bird-with-Segmentation/
-python -m pip install -e . || python setup.py install
+pip install git+git://github.com/cxy1997/Flappy-Bird-with-Segmentation.git
 ```
 
 ### Usage
